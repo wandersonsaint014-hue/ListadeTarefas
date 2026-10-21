@@ -4,35 +4,30 @@ const todoListUl = document.querySelector('#todo-list');
 
 let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
 // Função para renderizar uma tarefa no HTML
-function renderTaskOnHTML(task) {
+function renderTaskOnHTML(task, taskIndex) {
     const li = document.createElement('li');
     
     const input = document.createElement('input');
     input.setAttribute('type', 'checkbox');
     input.checked = task.done;
     input.addEventListener('change', (event) => {
-        const liToToggle = event.target.parentElement;
-        const spanToToggle = liToToggle.querySelector('span');
         const done = event.target.checked;
-        
-        if (done) {
-            spanToToggle.style.textDecoration = 'line-through';
-        } else {
-            spanToToggle.style.textDecoration = 'none';
-        }
-
-        tasks = tasks.map(t => {
-            if (t.title === spanToToggle.textContent) {
+        tasks = tasks.map((task, index) => {
+            if (index === taskIndex) {
                 return {
-                    title: t.title,
+                    title: task.title,
                     done: done,
                 };
             }
-            return t;
+            return task;
         });
 
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        saveTasks();
     });
 
     const span = document.createElement('span');
@@ -44,14 +39,11 @@ function renderTaskOnHTML(task) {
     const button = document.createElement('button');
     button.textContent = 'Remover';
     // Adicionando evento ao botão de remover
-    button.addEventListener('click', (event) => {
-        const liToRemove = event.target.parentElement;
-        const titleToRemove = liToRemove.querySelector('span').textContent;
+    button.addEventListener('click', () => {
+        tasks = tasks.filter((task, index) => index !== taskIndex);
 
-        tasks = tasks.filter(t => t.title !== titleToRemove);
-
-        todoListUl.removeChild(liToRemove);
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        todoListUl.removeChild(li);
+        saveTasks();
     });
 
     li.appendChild(input);
@@ -82,10 +74,10 @@ form.addEventListener('submit', (event) => {
         done: false,
     };
     tasks.push(newTask);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    saveTasks();
 
     // Adicionando a nova tarefa no HTML
-    renderTaskOnHTML(newTask);
+    renderTaskOnHTML(newTask, tasks.length - 1);
 
     taskTitleInput.value = '';
 });
